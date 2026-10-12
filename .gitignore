@@ -1,0 +1,9 @@
+node_modules
+.next
+out
+.env
+server/data
+server/.env
+server/.env.local
+*.log
+*.tsbuildinfo

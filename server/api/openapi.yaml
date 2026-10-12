@@ -1,0 +1,184 @@
+openapi: 3.0.3
+info:
+  title: SmartLockAdmin API
+  version: 1.0.0
+servers:
+  - url: http://localhost:3000
+paths:
+  /api/cards:
+    get:
+      operationId: listCards
+      responses:
+        '200':
+          description: Current registered cards
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CardsResponse'
+    put:
+      operationId: replaceCards
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CardsRequest'
+      responses:
+        '200':
+          description: Saved cards
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CardsResponse'
+        '400':
+          description: Invalid cards
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/camera/frame:
+    get:
+      operationId: getCameraFrame
+      responses:
+        '200':
+          description: Latest JPEG frame
+          content:
+            image/jpeg:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: No frame available
+    post:
+      operationId: uploadCameraFrame
+      requestBody:
+        required: true
+        content:
+          image/jpeg:
+            schema:
+              type: string
+              format: binary
+      responses:
+        '200':
+          description: Frame accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CameraUploadResponse'
+        '400':
+          description: Empty frame
+        '413':
+          description: Frame exceeds configured limit
+        '415':
+          description: Unsupported content type
+  /api/otp:
+    post:
+      operationId: issueOtp
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IssueOtpRequest'
+      responses:
+        '200':
+          description: OTP issued
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IssueOtpResponse'
+        '400':
+          description: Invalid request
+  /api/otp/verify:
+    post:
+      operationId: verifyOtp
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerifyOtpRequest'
+      responses:
+        '200':
+          description: Verification result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VerifyOtpResponse'
+        '400':
+          description: Invalid request
+components:
+  schemas:
+    Card:
+      type: object
+      additionalProperties: false
+      required: [uid, email]
+      properties:
+        uid:
+          type: string
+          minLength: 1
+        email:
+          type: string
+    CardsRequest:
+      type: object
+      additionalProperties: false
+      required: [cards]
+      properties:
+        cards:
+          type: array
+          items:
+            $ref: '#/components/schemas/Card'
+    CardsResponse:
+      type: object
+      required: [cards]
+      properties:
+        cards:
+          type: array
+          items:
+            $ref: '#/components/schemas/Card'
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
+    CameraUploadResponse:
+      type: object
+      required: [success, size]
+      properties:
+        success:
+          type: boolean
+        size:
+          type: integer
+    IssueOtpRequest:
+      type: object
+      required: [deviceId, email]
+      properties:
+        deviceId:
+          type: string
+        email:
+          type: string
+          format: email
+    IssueOtpResponse:
+      type: object
+      required: [deviceId, expiresAt]
+      properties:
+        deviceId:
+          type: string
+        expiresAt:
+          type: integer
+          format: int64
+    VerifyOtpRequest:
+      type: object
+      required: [deviceId, code]
+      properties:
+        deviceId:
+          type: string
+        code:
+          type: string
+    VerifyOtpResponse:
+      type: object
+      required: [valid]
+      properties:
+        valid:
+          type: boolean
